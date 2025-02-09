@@ -1,0 +1,138 @@
+body{
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 50vh;
+}
+
+.form-area,.counter,.complete{
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: #2e5470;
+    background-color: white;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10%;
+}
+
+.form-area input{
+    display: block;
+    margin: 20px;
+    padding: 10px;
+    margin-left: 0px;
+    margin-right: 0px;
+    width: 300px;
+    
+}
+
+
+button{
+    background-color: rgb(37, 156, 130);
+    width: 100%;
+    padding: 15px;
+    border: none;
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    border-radius: 5px;
+}
+
+button:hover{
+    cursor: pointer;
+}
+
+.counter h1{
+    text-align: center;
+}
+
+li{
+    display: inline-block;
+    font-size: 30px;
+    list-style-type: none;
+    padding: 10px;
+    text-transform: uppercase;
+    color: black;
+}
+
+li span{
+    display: block;
+    font-size: 70px;
+    text-align: center;
+}
+
+.counter ul {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+.counter li {
+    text-align: center;
+    flex: 1;
+}
+
+.complete-title{
+    animation: complete 4s infinite;
+    text-align: center;
+}
+
+@keyframes complete{
+    0% {
+        color: red;
+    }
+    25% {
+        color: green;
+        transform: rotate(5deg);
+    }
+    50% {
+        color: purple;
+        transform: scale(1.2);
+    }
+    75%{
+        color: blue;
+        transform: rotate(-5deg);
+    }
+    100%{
+        color: yellow;
+        transform: rotate(0deg);
+    }
+
+    
+}
+
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+  }
+
+  @media screen and (max-width: 600px) {
+    .counter ul {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .counter li {
+        font-size: 18px;
+        padding: 5px;
+    }
+
+    li span {
+        font-size: 40px;
+    }
+
+    .form-area, .counter, .complete {
+        width: 100%;
+        padding: 15px;
+    }
+}

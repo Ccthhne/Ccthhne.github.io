@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đếm Ngược</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+    <!-- ĐẾM NGƯỢC -->
+     <div class="form-area">
+
+        <form id="counter-form">
+            <div>
+                <input type="text" name="title" id="countdown-title-input" placeholder="Cưng mong đợi gì?">
+            </div>
+
+            <div>
+                <input type="date" name="date-picker" id="counter-date">
+            </div>
+            <button type="submit">Xác Nhận</button>
+        </form>
+     </div>
+
+     <!-- MÀN HÌNH ĐẾM NGƯỢC CHÍNH -->
+
+     <div class="counter" id="counter" hidden>
+        <h1 id = "counter-title">Counter Title</h1>
+        <ul>
+            <li><span>3</span>Ngày</li>
+            <li><span>6</span>Giờ</li>
+            <li><span>12</span>Phút</li>
+            <li><span>59</span>Giây</li>
+        </ul>
+        <button type="reset" id="counter-reset">Reset</button>
+     </div>
+
+     <!-- MÀN HÌNH HOÀN THÀNH ĐẾM NGƯỢC -->
+
+     <div class="complete" id="complete" hidden>
+        <h1 class="complete-title">Đếm Ngược Kết Thúc!</h1>
+        <h1 id="complete-info">Ngày Cưng Mong Chờ Đã Đến!</h1>
+        <button id="complete-button">Xong</button>
+     </div>
+
+     <script src="./script.js"></script>
+
+
+</body>
+
+</html>
