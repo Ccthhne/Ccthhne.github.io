@@ -1,4 +1,3 @@
-
 const counterFormArea = document.querySelector('.form-area');
 const counterForm = document.getElementById('counter-form');
 const counterEl = document.getElementById('counter');
@@ -18,34 +17,34 @@ let countdownActive;
 
 const second = 1000;
 const minute = second * 60;
-const hour = minute *60;
+const hour = minute * 60;
 const day = hour * 24;
 
 let title = '';
 let date = '';
 
+// Set min date for date picker
 let today = new Date().toISOString().split('T')[0];
-console.log (today);
+datePicker.setAttribute('min', today);
 
-datePicker.setAttribute('min',today);
-
-function updateDom(){
-    countdownActive = setInterval(()=>{
+// Update DOM with countdown values
+function updateDom() {
+    countdownActive = setInterval(() => {
         let now = new Date().getTime();
-        let distance = countdownValue -now;
-        //console.log(distance);
-        const days = Math.floor(distance/day);
-        const hours = Math.floor(distance % day / hour);
-        const minutes = Math.floor(distance % hour / minute);
-        const seconds = Math.floor(distance % minute / second);
+        let distance = countdownValue - now;
 
-        if(distance <0){
+        const days = Math.floor(distance / day);
+        const hours = Math.floor((distance % day) / hour);
+        const minutes = Math.floor((distance % hour) / minute);
+        const seconds = Math.floor((distance % minute) / second);
+
+        if (distance < 0) {
             counterEl.hidden = true;
             counterFormArea.hidden = true;
             complete.hidden = false;
-            clearInterval (countdownActive);
+            clearInterval(countdownActive);
             completeInfo.textContent = 'Ngày Cưng Mong Chờ Đã Đến!';
-        }else{
+        } else {
             timeElements[0].textContent = days;
             timeElements[1].textContent = hours;
             timeElements[2].textContent = minutes;
@@ -54,32 +53,33 @@ function updateDom(){
             counterFormArea.hidden = true;
             counterEl.hidden = false;
         }
-    },1000);
+    }, 1000);
 }
 
-function updateCountDown(e){
+// Handle form submission
+function updateCountDown(e) {
     e.preventDefault();
     title = e.srcElement[0].value;
     date = e.srcElement[1].value;
 
-    const savedCountdown = {
-        title:title,
-        date:date,
+    if (date === "") {
+        alert("Chọn đê đã!");
+        return;
     }
+
+    const savedCountdown = {
+        title: title,
+        date: date,
+    };
 
     localStorage.setItem('countdown', JSON.stringify(savedCountdown));
 
-    console.log(title, date);
-    if(date ===""){
-        alert("Điền vào đê!");
-    }else{
-        countdownValue = new Date(date).getTime();
-        console.log(countdownValue);
-        updateDom();
-    }
+    countdownValue = new Date(date).getTime();
+    updateDom();
 }
 
-function reset(){
+// Reset countdown
+function reset() {
     localStorage.removeItem('countdown');
     counterEl.hidden = true;
     complete.hidden = true;
@@ -89,8 +89,9 @@ function reset(){
     counterFormArea.hidden = false;
 }
 
-function restoreCountdown(){
-    if(localStorage.getItem('countdown')){
+// Restore countdown from localStorage
+function restoreCountdown() {
+    if (localStorage.getItem('countdown')) {
         counterFormArea.hidden = true;
         let countdownData = JSON.parse(localStorage.getItem('countdown'));
         title = countdownData.title;
@@ -100,8 +101,10 @@ function restoreCountdown(){
     }
 }
 
+// Event listeners
 counterForm.addEventListener('submit', updateCountDown);
 counterResetBtn.addEventListener('click', reset);
 completeBtn.addEventListener('click', reset);
 
-restoreCountdown ();
+// Restore countdown on page load
+restoreCountdown();
