@@ -6,6 +6,12 @@ body{
     min-height: 50vh;
 }
 
+.container {
+    width: 90%;
+    max-width: 600px; /* Giới hạn tối đa trên màn hình lớn */
+    text-align: center;
+}
+
 .form-area,.counter,.complete{
     padding: 20px;
     border-radius: 5px;
@@ -116,7 +122,7 @@ li span{
     }
   }
 
-  @media screen and (max-width: 600px) {
+@media screen and (max-width: 600px) {
     .counter ul {
         flex-direction: column;
         align-items: center;
@@ -136,3 +142,13 @@ li span{
         padding: 15px;
     }
 }
+
+@media screen and (max-width: 600px) {
+    button {
+        width: auto; /* Không chiếm toàn bộ chiều rộng */
+        max-width: 200px; /* Giới hạn chiều rộng tối đa */
+        font-size: 14px; /* Giảm kích thước chữ */
+        padding: 10px; /* Giảm padding */
+    }
+}
+
