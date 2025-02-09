@@ -143,12 +143,4 @@ li span{
     }
 }
 
-@media screen and (max-width: 600px) {
-    button {
-        width: auto; /* Không chiếm toàn bộ chiều rộng */
-        max-width: 200px; /* Giới hạn chiều rộng tối đa */
-        font-size: 14px; /* Giảm kích thước chữ */
-        padding: 10px; /* Giảm padding */
-    }
-}
 
