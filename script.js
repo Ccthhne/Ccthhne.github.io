@@ -62,7 +62,7 @@ function updateCountDown(e) {
     title = e.srcElement[0].value;
     date = e.srcElement[1].value;
 
-    if (date === "") {
+    if (title.trim() === "" || date === "") {
         alert("Chọn đê đã!");
         return;
     }
