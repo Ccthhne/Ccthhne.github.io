@@ -70,7 +70,7 @@ function updateCountDown(e) {
     localStorage.setItem('countdown', JSON.stringify(savedCountdown));
 
     console.log(title, date);
-    if (date === "") {
+    if (title.trim() === "" || date === "") {
         alert("Chọn đê đã!");
     }else{
         countdownValue = new Date (date).getTime();
