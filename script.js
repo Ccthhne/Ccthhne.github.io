@@ -62,11 +62,6 @@ function updateCountDown(e) {
     title = e.srcElement[0].value;
     date = e.srcElement[1].value;
 
-    if (title.trim() === "" || date === "") {
-        alert("Chọn đê đã!");
-        return;
-    }
-
     const savedCountdown = {
         title: title,
         date: date,
@@ -74,8 +69,14 @@ function updateCountDown(e) {
 
     localStorage.setItem('countdown', JSON.stringify(savedCountdown));
 
-    countdownValue = new Date(date).getTime();
-    updateDom();
+    console.log(title, date);
+    if (date === "") {
+        alert("Chọn đê đã!");
+    }else{
+        countdownValue = new Date (date).getTime();
+        console.log (countdownValue);
+        updateDom();
+    }
 }
 
 // Reset countdown
