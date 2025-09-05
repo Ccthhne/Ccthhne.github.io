@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Phong bì thư</title>
+  <title>Một bức thư</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
@@ -17,7 +17,7 @@
       overflow:hidden;
     }
 
-    /* Envelope */
+    
     .envelope{
       position:relative;
       width:90%;
@@ -87,7 +87,7 @@
       font-weight:bold;
       color:#fff;
       transition:opacity 0.5s ease;
-      font-family:'Segoe UI', sans-serif;
+      font-family:"Roboto Mono", monospace;
     }
 
     .envelope.open .circle-seal{
@@ -107,7 +107,7 @@
       transition:bottom 1s ease;
       z-index:0;
       padding:3%;
-      font-family:"Roboto Mono", monospace;
+      
       font-size:1rem;
       line-height:1.6;
       color:#333;
@@ -118,6 +118,7 @@
       z-index: 1;
       height: 100%;
       width: 100%;
+      font-family:"Roboto Mono", monospace;
     }
 
     .envelope.open .letter{
@@ -178,7 +179,7 @@
       display:grid;
       grid-template-columns:repeat(40,1fr);
       grid-template-rows:repeat(40,1fr);
-      gap:0.25rem; /* responsive gap */
+      gap:0.25rem; 
       animation:beat 1s infinite;
       width:90vw;
       max-width:600px;
