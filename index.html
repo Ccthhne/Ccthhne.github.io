@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Phong bì thư</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+    body{
+      margin:0;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:#d8c3a5;
+      overflow:hidden;
+    }
+
+    .envelope{
+      position:relative;
+      width:500px;
+      height:320px;
+      background:#333740;
+      border-radius:4px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.3);
+      overflow:hidden;
+      cursor:pointer;
+      transition:transform 0.6s ease;
+      z-index:2;
+    }
+
+    .envelope.open{
+      transform:rotateX(20deg) translateY(-60px);
+    }
+
+    .flap{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:50%;
+      background:#2d3038;
+      clip-path:polygon(0 0,100% 0,100% 100%,0 0);
+      transition:transform 0.6s ease;
+      transform-origin:top;
+      z-index:3;
+    }
+
+    .envelope.open .flap{
+      transform:rotateX(-180deg);
+    }
+
+    .ribbon-line{
+      position:absolute;
+      top:50%;
+      left:0;
+      width:100%;
+      height:8px;
+      background:#b77a2a;
+      transform:translateY(-50%);
+      z-index:1;
+      transition:opacity 0.5s ease;
+    }
+
+    .envelope.open .ribbon-line{
+      opacity:0;
+    }
+
+    .circle-seal{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      z-index:2;
+      width:60px;
+      height:60px;
+      background:#e0b84c;
+      border-radius:50%;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      font-size:20px;
+      font-weight:bold;
+      color:#fff;
+      transition:opacity 0.5s ease;
+      font-family:'Segoe UI', sans-serif;
+    }
+
+    .envelope.open .circle-seal{
+      opacity:0;
+    }
+
+    .letter{
+      position: absolute;
+      bottom:-100%;
+      left:50%;
+      transform:translateX(-50%);
+      width:90%;
+      height:85%;
+      background:#fff;
+      border:4px solid navy;
+      box-shadow:0 4px 10px rgba(0,0,0,0.2);
+      transition:bottom 1s ease;
+      z-index:0;
+      padding:20px;
+      font-family:"Roboto Mono", monospace;
+      font-size:18px;
+      line-height:1.6;
+      color:#333;
+    }
+
+    .letter-content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      width: 100%;
+    }
+
+    .envelope.open .letter{
+      bottom:10px;
+    }
+
+    .stamp{
+      position: absolute;
+      bottom:20px;
+      right:20px;
+      width:120px;
+      height:120px;
+      border:5px double crimson;
+      border-radius:50%;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      font-size:22px;
+      font-weight:bold;
+      font-family:"Roboto Mono", monospace;
+      color:crimson;
+      text-transform:uppercase;
+      opacity:0.8;
+      box-shadow:inset 0 0 6px rgba(0,0,0,0.3);
+    }
+
+    .stamp::before{
+      content:"❤";
+      position:absolute;
+      font-size:48px;
+      opacity:0.3;
+    }
+
+    /* big heart */
+    .overlay{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:#000;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      flex-direction:column;
+      opacity:0;
+      visibility:hidden;
+      transition:opacity 0.8s ease;
+      z-index:10;
+    }
+
+    .overlay.show{
+      opacity:1;
+      visibility:visible;
+    }
+
+    .big-heart{
+      display:grid;
+      grid-template-columns:repeat(40,18px);
+      grid-template-rows:repeat(40,18px);
+      gap:4px;
+      animation:beat 1s infinite;
+    }
+
+    .small-heart{
+      width:14px;
+      height:14px;
+      background:#ff6699;
+      position:relative;
+      transform:rotate(-45deg);
+    }
+
+    .small-heart::before,
+    .small-heart::after{
+      content:"";
+      position:absolute;
+      width:14px;
+      height:14px;
+      background:#ff6699;
+      border-radius:50%;
+    }
+
+    .small-heart::before{
+      top:-7px;
+      left:0;
+    }
+
+    .small-heart::after{
+      left:7px;
+      top:0;
+    }
+
+    @keyframes beat{
+      0%,100%{transform:scale(1);}
+      50%{transform:scale(1.1);}
+    }
+
+    /* dòng chữ */
+    .heart-wrapper{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content: center;
+  }
+
+
+    .love-text{
+      margin-top:2px;
+      font-size:32px;
+      color:#ff6699;
+      font-weight:bold;
+      font-family:"Roboto Mono", monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="envelope" id="envelope">
+    <div class="flap"></div>
+    <div class="ribbon-line"></div>
+    <div class="circle-seal">♡</div>
+    <div class="letter" id="letter">
+      <div class="letter-content">
+        Gửi Tạ Hồng Hạnh.<br>
+        Anh xin lỗi em nhiều vì chuyện mấy hôm nay. Đây là món quà nho nhỏ anh làm tặng em. Cái này cũng khá chật vật...<br>
+        Anh mong cái này sẽ giúp em bớt giận, bớt buồn và có thêm chút vui ❤️<br>
+        Ấn để xem tiếp -->
+      </div>
+      <div class="stamp">Lương</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="heart-wrapper">
+      <div class="big-heart" id="bigHeart"></div>
+      <div class="love-text">Hoàng Đức Lương ♡ Tạ Hồng Hạnh</div>
+    </div>
+    
+  </div>
+
+  <script>
+    const envelope = document.getElementById('envelope');
+    const overlay = document.getElementById('overlay');
+    const bigHeart = document.getElementById('bigHeart');
+
+    let clickCount = 0;
+
+    envelope.addEventListener('click', () => {
+      clickCount++;
+      if(clickCount === 1){
+        envelope.classList.toggle('open');
+      } else if(clickCount === 2){
+        envelope.style.display = 'none';
+        overlay.classList.add('show');
+
+        const rows = 40, cols = 40;
+        const heartShape = (x,y) => {
+          const nx = (x - cols/2) / (cols/2);
+          const ny = -(y - rows/2) / (rows/2); 
+          return Math.pow(nx*nx + ny*ny - 0.3, 3) - (nx*nx)*(ny*ny*ny) < 0;
+        };
+
+        for(let y=0;y<rows;y++){
+          for(let x=0;x<cols;x++){
+            const cell = document.createElement('div');
+            if(heartShape(x,y)){
+              cell.className = 'small-heart';
+            }
+            bigHeart.appendChild(cell);
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
