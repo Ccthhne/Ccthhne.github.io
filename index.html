@@ -127,148 +127,185 @@
         </div>
 
         <script>
-            const dom = {
-                startScreen: document.getElementById('start-screen'),
-                quizScreen: document.getElementById('quiz-screen'),
-                resultScreen: document.getElementById('result-screen'),
-                startBtn: document.getElementById('random-start-btn'),
-                dynamicStartBtn: document.getElementById('dynamic-start-btn'),
-                nextBtn: document.getElementById('next-btn'),
-                restartBtn: document.getElementById('restart-btn'),
-                progressEl: document.getElementById('progress'),
-                scoreEl: document.getElementById('score'),
-                definitionEl: document.getElementById('definition'),
-                optionsContainer: document.getElementById('options-container'),
-                feedbackEl: document.getElementById('feedback'),
-                finalScoreEl: document.getElementById('final-score'),
-                finalMessageEl: document.getElementById('final-message'),
-                actionButtons: document.getElementById('action-buttons'),
-                topicInput: document.getElementById('topic-input'),
-                startLoader: document.getElementById('start-loader'),
-                startError: document.getElementById('start-error'),
-                explainBtn: document.getElementById('explain-btn'),
-                geminiExplanationContainer: document.getElementById('gemini-explanation-container'),
-                geminiExplanationLoader: document.getElementById('gemini-explanation-loader'),
-                geminiExplanationContent: document.getElementById('gemini-explanation-content'),
-                storyBtn: document.getElementById('story-btn'),
-                geminiStoryContainer: document.getElementById('gemini-story-container'),
-                geminiStoryLoader: document.getElementById('gemini-story-loader'),
-                geminiStoryContent: document.getElementById('gemini-story-content'),
-                feedbackBtn: document.getElementById('feedback-btn'),
-                geminiFeedbackContainer: document.getElementById('gemini-feedback-container'),
-                geminiFeedbackLoader: document.getElementById('gemini-feedback-loader'),
-                geminiFeedbackContent: document.getElementById('gemini-feedback-content'),
-                exportBtn: document.getElementById('export-btn'),
+            // Lấy danh sách từ đã xuất hiện trong các lần chơi trước (nếu có)
+        function getUsedWords() {
+            const data = localStorage.getItem("usedWords");
+            return data ? JSON.parse(data) : [];
+        }
+
+        // Lưu danh sách từ mới vừa chơi
+        function saveUsedWords(words) {
+            const usedWords = getUsedWords();
+            const updated = [...new Set([...usedWords, ...words])]; // loại bỏ trùng lặp
+            localStorage.setItem("usedWords", JSON.stringify(updated));
+        }
+
+        // Hàm lọc quiz để bỏ trùng lặp
+        function filterQuiz(quizData) {
+            const usedWords = getUsedWords();
+            const filtered = quizData.filter(q => !usedWords.includes(q.word));
+            return filtered;
+        }
+
+        // Giả sử bạn vừa gọi AI để sinh quiz mới (quizData là mảng JSON từ prompt)
+        function processQuiz(quizData) {
+            const filteredQuiz = filterQuiz(quizData);
+
+            if (filteredQuiz.length === 0) {
+            console.log("Tất cả từ vựng đã được dùng, không còn từ mới.");
+            return [];
+        }
+
+        // Lưu lại những từ vừa dùng để lần sau không bị lặp
+        const newWords = filteredQuiz.map(q => q.word);
+        saveUsedWords(newWords);
+
+        return filteredQuiz;
+    }
+
+
+    const dom = {
+        startScreen: document.getElementById('start-screen'),
+        quizScreen: document.getElementById('quiz-screen'),
+        resultScreen: document.getElementById('result-screen'),
+        startBtn: document.getElementById('random-start-btn'),
+        dynamicStartBtn: document.getElementById('dynamic-start-btn'),
+        nextBtn: document.getElementById('next-btn'),
+        restartBtn: document.getElementById('restart-btn'),
+        progressEl: document.getElementById('progress'),
+        scoreEl: document.getElementById('score'),
+        definitionEl: document.getElementById('definition'),
+        optionsContainer: document.getElementById('options-container'),
+        feedbackEl: document.getElementById('feedback'),
+        finalScoreEl: document.getElementById('final-score'),
+        finalMessageEl: document.getElementById('final-message'),
+        actionButtons: document.getElementById('action-buttons'),
+        topicInput: document.getElementById('topic-input'),
+        startLoader: document.getElementById('start-loader'),
+        startError: document.getElementById('start-error'),
+        explainBtn: document.getElementById('explain-btn'),
+        geminiExplanationContainer: document.getElementById('gemini-explanation-container'),
+        geminiExplanationLoader: document.getElementById('gemini-explanation-loader'),
+        geminiExplanationContent: document.getElementById('gemini-explanation-content'),
+        storyBtn: document.getElementById('story-btn'),
+        geminiStoryContainer: document.getElementById('gemini-story-container'),
+        geminiStoryLoader: document.getElementById('gemini-story-loader'),
+        geminiStoryContent: document.getElementById('gemini-story-content'),
+        feedbackBtn: document.getElementById('feedback-btn'),
+        geminiFeedbackContainer: document.getElementById('gemini-feedback-container'),
+        geminiFeedbackLoader: document.getElementById('gemini-feedback-loader'),
+        geminiFeedbackContent: document.getElementById('gemini-feedback-content'),
+        exportBtn: document.getElementById('export-btn'),
+    };
+
+    let currentQuestionIndex, score;
+    let questions = [], quizWords = [], incorrectWords = [];
+    let rawFeedback = '', rawStory = '';
+    const TOTAL_QUESTIONS = 10;
+
+    // --- UTILITY FUNCTIONS ---
+            
+    function renderMarkdown(text) {
+        let html = text
+            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
+            .replace(/<\/ul>\n<ul>/g, '')
+            .replace(/\n/g, '<br>');
+        return html;
+    }
+
+    async function callGemini(prompt, generationConfig = null) {
+        const apiKey = "AIzaSyB8qSn1y03GmlrjRQC6t0QOQBq_FH1mkNM";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+        if (generationConfig) {
+            payload.generationConfig = generationConfig;
+        }
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) throw new Error(`API error! status: ${response.status}`);
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+                return result.candidates[0].content.parts[0].text;
+            }
+            return "Rất tiếc, không thể nhận được phản hồi từ AI.";
+        } catch (error) {
+            console.error("Gemini API call failed:", error);
+            return "Đã xảy ra lỗi khi kết nối với AI.";
+        }
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // --- QUIZ GENERATION & LIFECYCLE ---
+
+    function startQuiz(isDynamic = false) {
+        dom.startScreen.classList.add('hidden');
+        dom.resultScreen.classList.add('hidden');
+        dom.quizScreen.classList.remove('hidden');
+        currentQuestionIndex = 0;
+        score = 0;
+        incorrectWords = [];
+        rawFeedback = '';
+        rawStory = '';
+        displayQuestion();
+    }
+        async function startRandomQuiz() {
+            dom.startError.textContent = '';
+            dom.startLoader.classList.remove('hidden');
+            dom.dynamicStartBtn.disabled = true;
+            dom.startBtn.disabled = true;
+
+            const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions about a randomly chosen topic from elite-level advanced Chinese vocabulary. The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (elite-level advanced, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid elite-level advanced Chinese words. All options MUST be unique (no duplicates). No quiz question is allowed to repeat within the same game session. Any question that has already appeared in previous game sessions must not appear again in future sessions. Output ONLY valid JSON, no explanations.`;
+
+            const generationConfig = {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            word: { type: "STRING" },
+                            definition: { type: "STRING" },
+                            options: { type: "ARRAY", items: { type: "STRING" } }
+                        },
+                        required: ["word", "definition", "options"]
+                    }
+                }
             };
 
-            let currentQuestionIndex, score;
-            let questions = [], quizWords = [], incorrectWords = [];
-            let rawFeedback = '', rawStory = '';
-            const TOTAL_QUESTIONS = 10;
+            const resultText = await callGemini(prompt, generationConfig);
+            dom.startLoader.classList.add('hidden');
+            dom.dynamicStartBtn.disabled = false;
+            dom.startBtn.disabled = false;
 
-            // --- UTILITY FUNCTIONS ---
-            
-            function renderMarkdown(text) {
-                let html = text
-                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
-                    .replace(/<\/ul>\n<ul>/g, '')
-                    .replace(/\n/g, '<br>');
-                return html;
+            try {
+                const generatedQuestions = JSON.parse(resultText);
+                questions = generatedQuestions.map(q => {
+                    const allOptions = [...q.options, q.word];
+                    shuffleArray(allOptions);
+                    return { question: q.definition, options: allOptions, answer: q.word };
+                });
+                quizWords = questions.map(q => q.answer);
+                startQuiz(true);
+            } catch (e) {
+                console.error("Failed to parse AI response:", e, resultText);
+                dom.startError.textContent = "Không thể tạo câu hỏi. Vui lòng thử lại.";
             }
-
-            async function callGemini(prompt, generationConfig = null) {
-                const apiKey = "AIzaSyB8qSn1y03GmlrjRQC6t0QOQBq_FH1mkNM";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                if (generationConfig) {
-                    payload.generationConfig = generationConfig;
-                }
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (!response.ok) throw new Error(`API error! status: ${response.status}`);
-                    const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
-                        return result.candidates[0].content.parts[0].text;
-                    }
-                    return "Rất tiếc, không thể nhận được phản hồi từ AI.";
-                } catch (error) {
-                    console.error("Gemini API call failed:", error);
-                    return "Đã xảy ra lỗi khi kết nối với AI.";
-                }
-            }
-
-            function shuffleArray(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-            }
-
-            // --- QUIZ GENERATION & LIFECYCLE ---
-
-            function startQuiz(isDynamic = false) {
-                dom.startScreen.classList.add('hidden');
-                dom.resultScreen.classList.add('hidden');
-                dom.quizScreen.classList.remove('hidden');
-                currentQuestionIndex = 0;
-                score = 0;
-                incorrectWords = [];
-                rawFeedback = '';
-                rawStory = '';
-                displayQuestion();
-            }
-            async function startRandomQuiz() {
-                dom.startError.textContent = '';
-                dom.startLoader.classList.remove('hidden');
-                dom.dynamicStartBtn.disabled = true;
-                dom.startBtn.disabled = true;
-
-                const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions about a randomly chosen topic from HSK9 vocabulary. The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (HSK9, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid Chinese words at HSK9 level. All options MUST be unique (no duplicates). No quiz question is allowed to repeat within the same game session. Any question that has already appeared in previous game sessions must not appear again in future sessions. Output ONLY valid JSON, no explanations.`;
-
-                const generationConfig = {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "ARRAY",
-                        items: {
-                            type: "OBJECT",
-                            properties: {
-                                word: { type: "STRING" },
-                                definition: { type: "STRING" },
-                                options: { type: "ARRAY", items: { type: "STRING" } }
-                            },
-                            required: ["word", "definition", "options"]
-                        }
-                    }
-                };
-
-                const resultText = await callGemini(prompt, generationConfig);
-                dom.startLoader.classList.add('hidden');
-                dom.dynamicStartBtn.disabled = false;
-                dom.startBtn.disabled = false;
-
-                try {
-                    const generatedQuestions = JSON.parse(resultText);
-                    questions = generatedQuestions.map(q => {
-                        const allOptions = [...q.options, q.word];
-                        shuffleArray(allOptions);
-                        return { question: q.definition, options: allOptions, answer: q.word };
-                    });
-                    quizWords = questions.map(q => q.answer);
-                    startQuiz(true);
-                } catch (e) {
-                    console.error("Failed to parse AI response:", e, resultText);
-                    dom.startError.textContent = "Không thể tạo câu hỏi. Vui lòng thử lại.";
-                }
-            }
+        }
 
             async function startDynamicQuiz() {
                 const topic = dom.topicInput.value.trim();
@@ -281,8 +318,7 @@
                 dom.dynamicStartBtn.disabled = true;
                 dom.startBtn.disabled = true;
 
-                const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions about a randomly chosen topic from HSK9 vocabulary. The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (HSK9, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid Chinese words at HSK9 level. All options MUST be unique (no duplicates). No quiz question is allowed to repeat within the same game session. Any question that has already appeared in previous game sessions must not appear again in future sessions. Output ONLY valid JSON, no explanations.`;
-
+                const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions about the topic "${topic}". The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (elite-level advanced Chinese vocabulary, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid elite-level advanced Chinese vocabulary. All options MUST be unique (no duplicates). Output ONLY valid JSON, no explanations.`;
                 const generationConfig = {
                     responseMimeType: "application/json",
                     responseSchema: {
