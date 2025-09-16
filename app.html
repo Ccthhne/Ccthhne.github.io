@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Từ vựng HSK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .option-btn.correct {
+            background-color: #22c55e !important; /* green-500 */
+            color: white !important;
+            border-color: #16a34a; /* green-600 */
+        }
+        .option-btn.incorrect {
+            background-color: #ef4444 !important; /* red-500 */
+            color: white !important;
+            border-color: #dc2626; /* red-600 */
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #4f46e5; /* Indigo */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .prose {
+            max-width: 100% !important;
+        }
+        .prose h3 { margin-top: 1em; margin-bottom: 0.5em; font-size: 1.25em; font-weight: 600;}
+        .prose p { margin-top: 0.5em; margin-bottom: 0.5em; }
+        .prose ul { margin-top: 0.5em; margin-bottom: 0.5em; padding-left: 1.5em; list-style-type: disc;}
+        .prose li { margin-bottom: 0.25em;}
+        .prose strong, .prose b { font-weight: 700; }
+
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <div id="quiz-container" class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 transition-all duration-500">
+        
+        <div id="start-screen" class="text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">Quiz học từ vựng HSK</h1>
+            <p class="text-lg font-semibold text-amber-500 mb-4">✨ Nâng cấp bởi Gemini AI</p>
+            <p class="mb-6 text-lg">Học từ vựng theo chủ đề hoặc thử thách các từ ngẫu nhiên!</p>
+            
+            <div class="mb-4">
+                <label for="topic-input" class="block mb-2 text-left font-medium text-gray-700 dark:text-gray-300">Nhập chủ đề (ví dụ: environment, technology):</label>
+                <input type="text" id="topic-input" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Chủ đề bất kỳ...">
+            </div>
+
+            <button id="dynamic-start-btn" class="w-full mb-3 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg text-xl transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-300 dark:focus:ring-amber-800">
+                ✨ Bắt đầu quiz theo chủ đề
+            </button>
+            <button id="random-start-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg text-xl transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-800">
+                Bắt đầu quiz ngẫu nhiên
+            </button>
+            <div id="start-loader" class="hidden mt-4 flex justify-center items-center">
+                <div class="loader"></div>
+                <p class="ml-4">AI đang tạo bộ câu hỏi, vui lòng chờ...</p>
+            </div>
+            <p id="start-error" class="text-red-500 mt-4"></p>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <div id="progress" class="text-lg font-semibold text-gray-600 dark:text-gray-400">Câu hỏi 1 / 10</div>
+                <div id="score" class="text-lg font-bold text-indigo-600 dark:text-indigo-400">Điểm: 0</div>
+            </div>
+
+            <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-6 mb-6 min-h-[120px] flex items-center justify-center">
+                <p id="definition" class="text-center text-xl font-medium"></p>
+            </div>
+
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            
+            <div id="feedback" class="mt-6 text-center text-lg font-medium h-8"></div>
+
+            <div id="gemini-explanation-container" class="hidden mt-4">
+                <div id="gemini-explanation-loader" class="flex justify-center items-center p-4"><div class="loader"></div><p class="ml-4">Gemini đang suy nghĩ...</p></div>
+                <div id="gemini-explanation-content" class="p-4 bg-indigo-50 dark:bg-gray-700 rounded-lg prose dark:prose-invert"></div>
+            </div>
+            
+            <div id="action-buttons" class="hidden mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <button id="explain-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg text-lg">✨ Giải thích sâu hơn</button>
+                 <button id="next-btn" class="w-full bg-gray-700 hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Câu tiếp theo</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="hidden text-center">
+            <h2 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">Hoàn thành!</h2>
+            <p class="text-2xl mb-2">Điểm cuối cùng của bạn là:</p>
+            <p id="final-score" class="text-5xl font-bold mb-8"></p>
+            <p id="final-message" class="text-lg mb-6"></p>
+
+            <button id="feedback-btn" class="hidden w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg mb-4">✨ Nhận phản hồi cá nhân hóa</button>
+            <div id="gemini-feedback-container" class="hidden mt-4">
+                 <div id="gemini-feedback-loader" class="flex justify-center items-center p-4"><div class="loader"></div><p class="ml-4">AI đang phân tích lỗi sai...</p></div>
+                <div id="gemini-feedback-content" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-left prose dark:prose-invert"></div>
+            </div>
+
+            <button id="story-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg text-lg mb-4">✨ Tạo câu chuyện ôn tập</button>
+            <div id="gemini-story-container" class="hidden mt-4">
+                 <div id="gemini-story-loader" class="flex justify-center items-center p-4"><div class="loader"></div><p class="ml-4">Gemini đang sáng tác...</p></div>
+                <div id="gemini-story-content" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-left prose dark:prose-invert"></div>
+            </div>
+            
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button id="export-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl">📄 Xuất báo cáo</button>
+                <button id="restart-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Chơi lại</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dom = {
+            startScreen: document.getElementById('start-screen'),
+            quizScreen: document.getElementById('quiz-screen'),
+            resultScreen: document.getElementById('result-screen'),
+            startBtn: document.getElementById('random-start-btn'),
+            dynamicStartBtn: document.getElementById('dynamic-start-btn'),
+            nextBtn: document.getElementById('next-btn'),
+            restartBtn: document.getElementById('restart-btn'),
+            progressEl: document.getElementById('progress'),
+            scoreEl: document.getElementById('score'),
+            definitionEl: document.getElementById('definition'),
+            optionsContainer: document.getElementById('options-container'),
+            feedbackEl: document.getElementById('feedback'),
+            finalScoreEl: document.getElementById('final-score'),
+            finalMessageEl: document.getElementById('final-message'),
+            actionButtons: document.getElementById('action-buttons'),
+            topicInput: document.getElementById('topic-input'),
+            startLoader: document.getElementById('start-loader'),
+            startError: document.getElementById('start-error'),
+            explainBtn: document.getElementById('explain-btn'),
+            geminiExplanationContainer: document.getElementById('gemini-explanation-container'),
+            geminiExplanationLoader: document.getElementById('gemini-explanation-loader'),
+            geminiExplanationContent: document.getElementById('gemini-explanation-content'),
+            storyBtn: document.getElementById('story-btn'),
+            geminiStoryContainer: document.getElementById('gemini-story-container'),
+            geminiStoryLoader: document.getElementById('gemini-story-loader'),
+            geminiStoryContent: document.getElementById('gemini-story-content'),
+            feedbackBtn: document.getElementById('feedback-btn'),
+            geminiFeedbackContainer: document.getElementById('gemini-feedback-container'),
+            geminiFeedbackLoader: document.getElementById('gemini-feedback-loader'),
+            geminiFeedbackContent: document.getElementById('gemini-feedback-content'),
+            exportBtn: document.getElementById('export-btn'),
+        };
+
+        let currentQuestionIndex, score;
+        let questions = [], quizWords = [], incorrectWords = [];
+        let rawFeedback = '', rawStory = '';
+        const TOTAL_QUESTIONS = 10;
+
+        // --- UTILITY FUNCTIONS ---
+        
+        function renderMarkdown(text) {
+            let html = text
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
+                .replace(/<\/ul>\n<ul>/g, '')
+                .replace(/\n/g, '<br>');
+            return html;
+        }
+
+        async function callGemini(prompt, generationConfig = null) {
+            const apiKey = "AIzaSyB8qSn1y03GmlrjRQC6t0QOQBq_FH1mkNM";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+            if (generationConfig) {
+                payload.generationConfig = generationConfig;
+            }
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`API error! status: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                }
+                return "Rất tiếc, không thể nhận được phản hồi từ AI.";
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                return "Đã xảy ra lỗi khi kết nối với AI.";
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- QUIZ GENERATION & LIFECYCLE ---
+
+        function generateRandomQuestions() {
+            questions = [];
+            quizWords = [];
+            const wordsCopy = [...hardcodedWords];
+            shuffleArray(wordsCopy);
+            for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+                const correctAnswer = wordsCopy[i];
+                quizWords.push(correctAnswer.word);
+                const options = [correctAnswer];
+                const wrongOptionsPool = hardcodedWords.filter(w => w.word !== correctAnswer.word);
+                shuffleArray(wrongOptionsPool);
+                for (let j = 0; j < 3; j++) {
+                    options.push(wrongOptionsPool[j]);
+                }
+                shuffleArray(options);
+                questions.push({ question: correctAnswer.definition, options: options.map(opt => opt.word), answer: correctAnswer.word });
+            }
+        }
+        
+        function startQuiz(isDynamic = false) {
+            if (!isDynamic) {
+                generateRandomQuestions();
+            }
+            dom.startScreen.classList.add('hidden');
+            dom.resultScreen.classList.add('hidden');
+            dom.quizScreen.classList.remove('hidden');
+            currentQuestionIndex = 0;
+            score = 0;
+            incorrectWords = [];
+            rawFeedback = '';
+            rawStory = '';
+            displayQuestion();
+        }
+
+        async function startDynamicQuiz() {
+            const topic = dom.topicInput.value.trim();
+            if (!topic) {
+                dom.startError.textContent = "Vui lòng nhập một chủ đề.";
+                return;
+            }
+            dom.startError.textContent = '';
+            dom.startLoader.classList.remove('hidden');
+            dom.dynamicStartBtn.disabled = true;
+            dom.startBtn.disabled = true;
+
+            const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions based on the HSK6 word list. The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (HSK6, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid Chinese words at HSK6 level. All options MUST be unique (no duplicates). Output ONLY valid JSON, no explanations.`;
+            const generationConfig = {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            word: { type: "STRING" },
+                            definition: { type: "STRING" },
+                            options: { type: "ARRAY", items: { type: "STRING" } }
+                        },
+                        required: ["word", "definition", "options"]
+                    }
+                }
+            };
+            
+            const resultText = await callGemini(prompt, generationConfig);
+            dom.startLoader.classList.add('hidden');
+            dom.dynamicStartBtn.disabled = false;
+            dom.startBtn.disabled = false;
+
+            try {
+                const generatedQuestions = JSON.parse(resultText);
+                questions = generatedQuestions.map(q => {
+                    const allOptions = [...q.options, q.word];
+                    shuffleArray(allOptions);
+                    return { question: q.definition, options: allOptions, answer: q.word };
+                });
+                quizWords = questions.map(q => q.answer);
+                startQuiz(true);
+            } catch (e) {
+                console.error("Failed to parse AI response:", e, resultText);
+                dom.startError.textContent = "AI không thể tạo câu hỏi. Vui lòng thử lại với chủ đề khác.";
+            }
+        }
+
+        function displayQuestion() {
+            resetState();
+            const currentQuestion = questions[currentQuestionIndex];
+            dom.progressEl.textContent = `Câu hỏi ${currentQuestionIndex + 1} / ${TOTAL_QUESTIONS}`;
+            dom.scoreEl.textContent = `Điểm: ${score}`;
+            dom.definitionEl.textContent = currentQuestion.question;
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option-btn', 'w-full', 'p-4', 'border-2', 'border-gray-300', 'dark:border-gray-600', 'rounded-lg', 'text-lg', 'transition-all', 'hover:bg-gray-200', 'dark:hover:bg-gray-700');
+                button.addEventListener('click', () => selectAnswer(button, option));
+                dom.optionsContainer.appendChild(button);
+            });
+        }
+        
+        function resetState() {
+            dom.actionButtons.classList.add('hidden');
+            dom.feedbackEl.textContent = '';
+            dom.geminiExplanationContainer.classList.add('hidden');
+            dom.geminiExplanationContent.innerHTML = '';
+            dom.explainBtn.disabled = false;
+            while (dom.optionsContainer.firstChild) {
+                dom.optionsContainer.removeChild(dom.optionsContainer.firstChild);
+            }
+        }
+
+        function selectAnswer(button, selectedWord) {
+            const correctAnswer = questions[currentQuestionIndex].answer;
+            const isCorrect = selectedWord === correctAnswer;
+            if (isCorrect) {
+                score++;
+                dom.feedbackEl.textContent = 'Chính xác!';
+                dom.feedbackEl.classList.add('text-green-500');
+                dom.feedbackEl.classList.remove('text-red-500');
+            } else {
+                dom.feedbackEl.textContent = `Sai rồi! Đáp án đúng là: ${correctAnswer}`;
+                dom.feedbackEl.classList.add('text-red-500');
+                dom.feedbackEl.classList.remove('text-green-500');
+                incorrectWords.push({word: correctAnswer, yourAnswer: selectedWord});
+            }
+            dom.scoreEl.textContent = `Điểm: ${score}`;
+            Array.from(dom.optionsContainer.children).forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === correctAnswer) btn.classList.add('correct');
+                else if (btn === button) btn.classList.add('incorrect');
+            });
+            dom.actionButtons.classList.remove('hidden');
+        }
+
+        function showNextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < TOTAL_QUESTIONS) {
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            dom.quizScreen.classList.add('hidden');
+            dom.resultScreen.classList.remove('hidden');
+            dom.finalScoreEl.textContent = `${score} / ${TOTAL_QUESTIONS}`;
+            
+            dom.storyBtn.disabled = false;
+            dom.geminiStoryContainer.classList.add('hidden');
+            dom.geminiStoryContent.innerHTML = '';
+            
+            dom.feedbackBtn.disabled = false;
+            dom.geminiFeedbackContainer.classList.add('hidden');
+            dom.geminiFeedbackContent.innerHTML = '';
+            if (incorrectWords.length > 0) {
+                dom.feedbackBtn.classList.remove('hidden');
+            } else {
+                dom.feedbackBtn.classList.add('hidden');
+            }
+
+            let message = '';
+            const percentage = (score / TOTAL_QUESTIONS) * 100;
+            if (percentage === 100) message = 'Tuyệt vời! Bạn là một bậc thầy từ vựng!';
+            else if (percentage >= 80) message = 'Rất tốt! Vốn từ vựng của bạn thật ấn tượng.';
+            else if (percentage >= 50) message = 'Khá lắm! Hãy tiếp tục luyện tập nhé.';
+            else message = 'Đừng nản lòng! Luyện tập thêm sẽ giúp bạn tiến bộ.';
+            dom.finalMessageEl.textContent = message;
+        }
+
+        // --- GEMINI API FEATURES ---
+
+        async function getExplanation() {
+            dom.explainBtn.disabled = true;
+            dom.geminiExplanationContainer.classList.remove('hidden');
+            dom.geminiExplanationContent.classList.add('hidden');
+            dom.geminiExplanationLoader.classList.remove('hidden');
+            const word = questions[currentQuestionIndex].answer;
+            const prompt = `Hãy giải thích từ vựng HSK6 "${word}" cho người học tiếng Việt. Cung cấp:\n1. 2-3 câu ví dụ bằng tiếng Trung giản thể và dịch sang tiếng Việt theo định dạng: Ví dụ tiếng Trung (dịch ví dụ tiếng Trung).\n2. Các cụm từ (collocations) phổ biến.\n3. Hai từ đồng nghĩa (synonym) quan trọng và nhớ giải thích thêm nó được sử dụng trong hoàn cảnh nào. Định dạng bằng Markdown, sử dụng tiêu đề (###) và danh sách (*), bỏ đi lời chào ban đầu ("Chào bạn, sau đây là,...") mà vào thẳng nội dung.`;
+            const explanation = await callGemini(prompt);
+            dom.geminiExplanationLoader.classList.add('hidden');
+            dom.geminiExplanationContent.innerHTML = renderMarkdown(explanation);
+            dom.geminiExplanationContent.classList.remove('hidden');
+        }
+
+        async function generateStory() {
+            dom.storyBtn.disabled = true;
+            dom.geminiStoryContainer.classList.remove('hidden');
+            dom.geminiStoryContent.classList.add('hidden');
+            dom.geminiStoryLoader.classList.remove('hidden');
+            const wordsString = quizWords.join(', ');
+            const prompt = `Viết 2 đoạn văn ngắn (mỗi đoạn khoảng 50-100 từ) dành cho người học HSK6, sử dụng các từ sau: ${wordsString}. Đoạn văn thứ nhất thì hãy viết toàn tiếng Trung giản thể, đoạn văn thứ 2 thì viết tiếng Trung giản thể ở những từ khoá được chọn (phần còn lại dịch sang tiếng Việt ở đoạn văn thứ nhất). Hãy làm cho câu chuyện mạch lạc và dễ hiểu, tựa đề đoạn văn sẽ tương ứng với nội dung của nó. Định dạng bằng Markdown và **in đậm** các từ khóa, ở phần đầu tiên không được đưa ra câu chào ví dụ như "Bạn yêu cầu viết câu chuyện, sau đây là câu chuyện...".`;
+            rawStory = await callGemini(prompt);
+            dom.geminiStoryLoader.classList.add('hidden');
+            dom.geminiStoryContent.innerHTML = renderMarkdown(rawStory);
+            dom.geminiStoryContent.classList.remove('hidden');
+        }
+
+        async function getPersonalizedFeedback() {
+            dom.feedbackBtn.disabled = true;
+            dom.geminiFeedbackContainer.classList.remove('hidden');
+            dom.geminiFeedbackContent.classList.add('hidden');
+            dom.geminiFeedbackLoader.classList.remove('hidden');
+            const wordsString = incorrectWords.map(item => item.word).join(', ');
+            const prompt = `Một học sinh HSK6 đã trả lời sai các câu hỏi về những từ sau: ${wordsString}. Hãy đưa ra phản hồi mang tính xây dựng và cá nhân hóa bằng tiếng Việt, sử dụng định dạng Markdown. Bao gồm:\n- Một tiêu đề chính (ví dụ: "### Phân tích và gợi ý").\n- Phân tích về điểm chung của các từ sai (nếu có).\n- Một mẹo học tập đơn giản và hiệu quả.`;
+            rawFeedback = await callGemini(prompt);
+            dom.geminiFeedbackLoader.classList.add('hidden');
+            dom.geminiFeedbackContent.innerHTML = renderMarkdown(rawFeedback);
+            dom.geminiFeedbackContent.classList.remove('hidden');
+        }
+        
+        // --- EXPORT FUNCTIONALITY ---
+
+        function generateMarkdownReport() {
+            let report = `# Báo cáo kết quả Quiz HSK6\n\n`;
+            report += `## 1. Tổng kết\n`;
+            report += `- **Điểm số:** ${score} / ${TOTAL_QUESTIONS}\n`;
+            report += `- **Ngày làm:** ${new Date().toLocaleDateString('vi-VN')}\n\n`;
+
+            report += `## 2. Các từ vựng đã học\n`;
+            quizWords.forEach(word => {
+                report += `- ${word}\n`;
+            });
+            report += `\n`;
+
+            if (incorrectWords.length > 0) {
+                report += `## 3. Các từ trả lời sai\n`;
+                incorrectWords.forEach(item => {
+                    report += `- **${item.word}** (Bạn đã chọn: ${item.yourAnswer})\n`;
+                });
+                report += `\n`;
+            } else {
+                 report += `## 3. Các từ trả lời sai\n`;
+                 report += `Chúc mừng! Bạn đã trả lời đúng tất cả các câu hỏi.\n\n`;
+            }
+
+            if (rawFeedback) {
+                report += `## 4. Phản hồi cá nhân hóa từ AI\n`;
+                report += rawFeedback + '\n\n';
+            }
+
+            if (rawStory) {
+                report += `## 5. Câu chuyện ôn tập từ AI\n`;
+                report += rawStory + '\n\n';
+            }
+            
+            return report;
+        }
+
+        function exportResults() {
+            const markdownContent = generateMarkdownReport();
+            const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'HSK6_Quiz_Report.md';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- EVENT LISTENERS ---
+        dom.startBtn.addEventListener('click', () => startQuiz(false));
+        dom.dynamicStartBtn.addEventListener('click', startDynamicQuiz);
+        dom.nextBtn.addEventListener('click', showNextQuestion);
+        dom.restartBtn.addEventListener('click', () => {
+            dom.resultScreen.classList.add('hidden');
+            dom.startScreen.classList.remove('hidden');
+        });
+        dom.explainBtn.addEventListener('click', getExplanation);
+        dom.storyBtn.addEventListener('click', generateStory);
+        dom.feedbackBtn.addEventListener('click', getPersonalizedFeedback);
+        dom.exportBtn.addEventListener('click', exportResults);
+    </script>
+</body>
+</html>
