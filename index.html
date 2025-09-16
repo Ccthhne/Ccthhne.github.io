@@ -423,7 +423,7 @@
             dom.geminiStoryContent.classList.add('hidden');
             dom.geminiStoryLoader.classList.remove('hidden');
             const wordsString = quizWords.join(', ');
-            const prompt = Viết 2 đoạn văn ngắn (mỗi đoạn khoảng 50-100 từ) dành cho người học HSK6, sử dụng các từ sau: ${wordsString}. Đoạn văn thứ nhất: viết bằng tiếng Trung giản thể, và ngay sau mỗi đoạn văn hãy dịch sang tiếng Việt. Đoạn văn thứ hai: viết song ngữ (các từ khoá giữ nguyên tiếng Trung giản thể, phần còn lại viết bằng tiếng Việt). Đặt tiêu đề ngắn gọn cho từng đoạn văn, đúng với nội dung của đoạn. Không được thêm câu chào hoặc giải thích ngoài nội dung chính.;
+            const prompt = `Viết 2 đoạn văn ngắn (mỗi đoạn khoảng 50-100 từ) dành cho người học HSK6, sử dụng các từ sau: ${wordsString}. Đoạn văn thứ nhất: viết bằng tiếng Trung giản thể, và ngay sau mỗi đoạn văn hãy dịch sang tiếng Việt. Đoạn văn thứ hai: viết song ngữ (các từ khoá giữ nguyên tiếng Trung giản thể, phần còn lại viết bằng tiếng Việt). Đặt tiêu đề ngắn gọn cho từng đoạn văn, đúng với nội dung của đoạn. Không được thêm câu chào hoặc giải thích ngoài nội dung chính.`;
             rawStory = await callGemini(prompt);
             dom.geminiStoryLoader.classList.add('hidden');
             dom.geminiStoryContent.innerHTML = renderMarkdown(rawStory);
@@ -509,6 +509,7 @@
     </script>
 </body>
 </html>
+
 
 
 
