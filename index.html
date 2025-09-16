@@ -215,29 +215,7 @@
 
         // --- QUIZ GENERATION & LIFECYCLE ---
 
-        function generateRandomQuestions() {
-            questions = [];
-            quizWords = [];
-            const wordsCopy = [...hardcodedWords];
-            shuffleArray(wordsCopy);
-            for (let i = 0; i < TOTAL_QUESTIONS; i++) {
-                const correctAnswer = wordsCopy[i];
-                quizWords.push(correctAnswer.word);
-                const options = [correctAnswer];
-                const wrongOptionsPool = hardcodedWords.filter(w => w.word !== correctAnswer.word);
-                shuffleArray(wrongOptionsPool);
-                for (let j = 0; j < 3; j++) {
-                    options.push(wrongOptionsPool[j]);
-                }
-                shuffleArray(options);
-                questions.push({ question: correctAnswer.definition, options: options.map(opt => opt.word), answer: correctAnswer.word });
-            }
-        }
-        
         function startQuiz(isDynamic = false) {
-            if (!isDynamic) {
-                generateRandomQuestions();
-            }
             dom.startScreen.classList.add('hidden');
             dom.resultScreen.classList.add('hidden');
             dom.quizScreen.classList.remove('hidden');
@@ -247,6 +225,48 @@
             rawFeedback = '';
             rawStory = '';
             displayQuestion();
+        }
+        async function startRandomQuiz() {
+            dom.startError.textContent = '';
+            dom.startLoader.classList.remove('hidden');
+            dom.dynamicStartBtn.disabled = true;
+            dom.startBtn.disabled = true;
+
+            const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions with a RANDOM topic. The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (HSK6, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid Chinese words at HSK6 level. All options MUST be unique (no duplicates). Output ONLY valid JSON, no explanations.`; 
+            const generationConfig = {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            word: { type: "STRING" },
+                            definition: { type: "STRING" },
+                            options: { type: "ARRAY", items: { type: "STRING" } }
+                        },
+                        required: ["word", "definition", "options"]
+                    }
+                }
+            };
+
+            const resultText = await callGemini(prompt, generationConfig);
+            dom.startLoader.classList.add('hidden');
+            dom.dynamicStartBtn.disabled = false;
+            dom.startBtn.disabled = false;
+
+             try {
+                const generatedQuestions = JSON.parse(resultText);
+                questions = generatedQuestions.map(q => {
+                    const allOptions = [...q.options, q.word];
+                    shuffleArray(allOptions);
+                    return { question: q.definition, options: allOptions, answer: q.word };
+                });
+                quizWords = questions.map(q => q.answer);
+                startQuiz(true);
+            } catch (e) {
+                console.error("Failed to parse AI response:", e, resultText);
+                dom.startError.textContent = "AI không thể tạo câu hỏi. Vui lòng thử lại.";
+            }
         }
 
         async function startDynamicQuiz() {
@@ -260,7 +280,7 @@
             dom.dynamicStartBtn.disabled = true;
             dom.startBtn.disabled = true;
 
-            const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions based on the HSK6 word list. The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (HSK6, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid Chinese words at HSK6 level. All options MUST be unique (no duplicates). Output ONLY valid JSON, no explanations.`;
+            const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions. The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (HSK6, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid Chinese words at HSK6 level. All options MUST be unique (no duplicates). Output ONLY valid JSON, no explanations.`;
             const generationConfig = {
                 responseMimeType: "application/json",
                 responseSchema: {
@@ -475,7 +495,7 @@
         }
 
         // --- EVENT LISTENERS ---
-        dom.startBtn.addEventListener('click', () => startQuiz(false));
+        dom.startBtn.addEventListener('click', () => startRandomQuiz);
         dom.dynamicStartBtn.addEventListener('click', startDynamicQuiz);
         dom.nextBtn.addEventListener('click', showNextQuestion);
         dom.restartBtn.addEventListener('click', () => {
@@ -489,4 +509,5 @@
     </script>
 </body>
 </html>
+
 
