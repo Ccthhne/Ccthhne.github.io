@@ -232,7 +232,7 @@
             dom.dynamicStartBtn.disabled = true;
             dom.startBtn.disabled = true;
 
-            const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions about a RANDOM topic. The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (HSK6, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid Chinese words at HSK6 level. All options MUST be unique (no duplicates). Output ONLY valid JSON, no explanations.`; 
+            const prompt = `Generate a JSON array of ${TOTAL_QUESTIONS} Chinese vocabulary quiz questions about a randomly chosen topic from HSK6 vocabulary. The quiz must be strictly in CHINESE and VIETNAMESE only (no other languages). Each object MUST follow this structure: { "word": "Chinese word (HSK6, simplified Chinese characters only)", "definition": "Vietnamese meaning of the word", "options": [ "wrong1 (Chinese)", "wrong2 (Chinese)", "wrong3 (Chinese)" ] }. IMPORTANT RULES: The "word" itself MUST NOT appear in the "options" array. All words in the "options" array MUST be valid Chinese words at HSK6 level. All options MUST be unique (no duplicates). Output ONLY valid JSON, no explanations.`;
             const generationConfig = {
                 responseMimeType: "application/json",
                 responseSchema: {
@@ -509,6 +509,7 @@
     </script>
 </body>
 </html>
+
 
 
 
