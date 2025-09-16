@@ -55,7 +55,7 @@
         
         <div id="start-screen" class="text-center">
             <h1 class="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">Quiz học từ vựng HSK</h1>
-            <p class="text-lg font-semibold text-amber-500 mb-4">✨ Nâng cấp bởi Gemini AI</p>
+            <p class="text-lg font-semibold text-amber-500 mb-4">✨ Nâng cấp bởi Gemini</p>
             <p class="mb-6 text-lg">Học từ vựng theo chủ đề hoặc thử thách các từ ngẫu nhiên!</p>
             
             <div class="mb-4">
@@ -71,7 +71,7 @@
             </button>
             <div id="start-loader" class="hidden mt-4 flex justify-center items-center">
                 <div class="loader"></div>
-                <p class="ml-4">AI đang tạo bộ câu hỏi, vui lòng chờ...</p>
+                <p class="ml-4">Đang tạo bộ câu hỏi, vui lòng chờ...</p>
             </div>
             <p id="start-error" class="text-red-500 mt-4"></p>
         </div>
@@ -91,36 +91,36 @@
             <div id="feedback" class="mt-6 text-center text-lg font-medium h-8"></div>
 
             <div id="gemini-explanation-container" class="hidden mt-4">
-                <div id="gemini-explanation-loader" class="flex justify-center items-center p-4"><div class="loader"></div><p class="ml-4">Gemini đang suy nghĩ...</p></div>
+                <div id="gemini-explanation-loader" class="flex justify-center items-center p-4"><div class="loader"></div><p class="ml-4">Đang suy nghĩ...</p></div>
                 <div id="gemini-explanation-content" class="p-4 bg-indigo-50 dark:bg-gray-700 rounded-lg prose dark:prose-invert"></div>
             </div>
             
             <div id="action-buttons" class="hidden mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 <button id="explain-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg text-lg">✨ Giải thích sâu hơn</button>
+                 <button id="explain-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg text-lg">✨ Giải thích chi tiết</button>
                  <button id="next-btn" class="w-full bg-gray-700 hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg text-lg">Câu tiếp theo</button>
             </div>
         </div>
 
         <div id="result-screen" class="hidden text-center">
             <h2 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">Hoàn thành!</h2>
-            <p class="text-2xl mb-2">Điểm cuối cùng của bạn là:</p>
+            <p class="text-2xl mb-2">Tổng điểm của bạn là:</p>
             <p id="final-score" class="text-5xl font-bold mb-8"></p>
             <p id="final-message" class="text-lg mb-6"></p>
 
             <button id="feedback-btn" class="hidden w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg mb-4">✨ Nhận phản hồi cá nhân hóa</button>
             <div id="gemini-feedback-container" class="hidden mt-4">
-                 <div id="gemini-feedback-loader" class="flex justify-center items-center p-4"><div class="loader"></div><p class="ml-4">AI đang phân tích lỗi sai...</p></div>
+                 <div id="gemini-feedback-loader" class="flex justify-center items-center p-4"><div class="loader"></div><p class="ml-4">Đang phân tích lỗi sai...</p></div>
                 <div id="gemini-feedback-content" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-left prose dark:prose-invert"></div>
             </div>
 
             <button id="story-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg text-lg mb-4">✨ Tạo câu chuyện ôn tập</button>
             <div id="gemini-story-container" class="hidden mt-4">
-                 <div id="gemini-story-loader" class="flex justify-center items-center p-4"><div class="loader"></div><p class="ml-4">Gemini đang sáng tác...</p></div>
+                 <div id="gemini-story-loader" class="flex justify-center items-center p-4"><div class="loader"></div><p class="ml-4">Đang sáng tác...</p></div>
                 <div id="gemini-story-content" class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-left prose dark:prose-invert"></div>
             </div>
             
             <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button id="export-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl">📄 Xuất báo cáo</button>
+                <button id="export-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl">📄 Xuất file</button>
                 <button id="restart-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Chơi lại</button>
             </div>
         </div>
@@ -509,6 +509,7 @@
     </script>
 </body>
 </html>
+
 
 
 
