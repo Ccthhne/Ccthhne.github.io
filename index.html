@@ -265,7 +265,7 @@
                 startQuiz(true);
             } catch (e) {
                 console.error("Failed to parse AI response:", e, resultText);
-                dom.startError.textContent = "AI không thể tạo câu hỏi. Vui lòng thử lại.";
+                dom.startError.textContent = "Không thể tạo câu hỏi. Vui lòng thử lại.";
             }
         }
 
@@ -313,7 +313,7 @@
                 startQuiz(true);
             } catch (e) {
                 console.error("Failed to parse AI response:", e, resultText);
-                dom.startError.textContent = "AI không thể tạo câu hỏi. Vui lòng thử lại với chủ đề khác.";
+                dom.startError.textContent = "Không thể tạo câu hỏi. Vui lòng thử lại với chủ đề khác.";
             }
         }
 
@@ -395,10 +395,10 @@
 
             let message = '';
             const percentage = (score / TOTAL_QUESTIONS) * 100;
-            if (percentage === 100) message = 'Tuyệt vời! Bạn là một bậc thầy từ vựng!';
+            if (percentage === 100) message = 'Tuyệt vời! Bạn đã học rất tốt đó!';
             else if (percentage >= 80) message = 'Rất tốt! Vốn từ vựng của bạn thật ấn tượng.';
             else if (percentage >= 50) message = 'Khá lắm! Hãy tiếp tục luyện tập nhé.';
-            else message = 'Đừng nản lòng! Luyện tập thêm sẽ giúp bạn tiến bộ.';
+            else message = 'Ngu!.';
             dom.finalMessageEl.textContent = message;
         }
 
@@ -509,6 +509,7 @@
     </script>
 </body>
 </html>
+
 
 
 
